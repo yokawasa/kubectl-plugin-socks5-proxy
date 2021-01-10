@@ -1,0 +1,1 @@
+# kubectl-plugin-socks-proxy
