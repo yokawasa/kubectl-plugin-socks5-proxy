@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+#
+# A kubectl plugin that creates a local SOCKS5 proxy through which you can access to pods/services in a Kubernetes cluster
+#
+
+[[ -n $DEBUG ]] && set -x -e
+
+MAX_POD_CREATION_TIME=10  # unit: second
+DEFAULT_PORT=1080
+DEFAULT_PROXY_NAMESPACE=default
+
+help(){
+  echo "Usage: "
+  echo "  kubectl socks-proxy"
+  echo ""
+  options
+}
+
+options(){
+  cat <<"EOF"
+Options:
+  -n, --namespace <namespace>   Namespace to create SOCKS5 proxy server in
+
+  -p, --port <local port>       Local port to be forwarded to the SOCKS5 proxy server (Pod).
+                                A client connects to this port, then the connection is forwarded to the 
+                                SOCKS5 proxy server, which is then forwareded to the destination server
+
+  --skip-cleanup-proxy          Skip cearning up SOCKS5 proxy pod
+                                Default: Cleaning up SOCKS5 proxy pod at the end
+
+  -h, --help                    Show this message
+EOF
+}
+
+cleanup_proxy(){
+  local namespace="$1"
+  echo "Clearning up SOCKS5 proxy server (Pod)..."
+  kubectl delete pod socks5 -n ${namespace}
+}
+
+run_proxy(){
+  local namespace="$1"
+  local port="$2"
+
+  # Install an SOCKS5 proxy server if not yet installed
+  r=$(kubectl get pod socks5 -n ${namespace} 2>/dev/null | tail -1 | awk '{print $1}') # 
+  if [ "${r}" != "socks5" ];then
+    echo "Creating Socks5 Proxy (Pod)..."
+    cat <<EOF | kubectl apply -n ${namespace} -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: socks5
+  labels:
+    env: test
+spec:
+  containers:
+  - name: socks5
+    image: serjs/go-socks5-proxy
+    ports:
+    - containerPort: 1080
+  nodeSelector:
+    "kubernetes.io/os": linux
+EOF
+
+    # Wait until SOCKS5 proxy server gets ready
+    c=1
+    while [[ ${c} -le ${MAX_POD_CREATION_TIME} ]];
+    do
+      pod_status=$(kubectl get pod socks5 -n ${namespace} 2>/dev/null | tail -1 | awk '{print $3}')
+      if [ "${pod_status}" = "Running" ]; then
+        break
+      fi
+      (( c++ ))
+      sleep 1
+    done
+  fi
+
+  # Setup portforward
+  kubectl port-forward -n ${namespace} socks5 $port:1080 
+}
+
+plugin_main() {
+  skip_cleanup_proxy=no
+  while [ $# -gt 0 ] ; do
+    nSkip=1
+    case $1 in
+      "-h" | "--help")
+	help
+	exit 0
+	;;
+      "--skip-cleanup-proxy")
+	skip_cleanup_proxy=yes
+	;;
+      "-n" | "--namespace" )
+	namespace=$2
+	nSkip=2
+	;;
+      "-p" | "--port" )
+	port=$2
+	nSkip=2
+	;;
+      *)
+	help >&2
+	exit 1
+	;;
+    esac
+    shift $nSkip
+  done
+
+  if [[ "$(type kubectl &>/dev/null; echo $?)" -eq 1 ]]; then
+    echo "Error: missing kubectl command" >&2
+    echo "Please install kubectl (https://kubernetes.io/docs/tasks/tools/install-kubectl/)" >&2
+    exit 1
+  fi
+
+  if [ ! -n "${namespace}" ]; then
+    namespace=${DEFAULT_PROXY_NAMESPACE}
+  fi
+  echo "using: namespace=${namespace}"
+
+  if [ ! -n "${port}" ]; then
+    port=${DEFAULT_PORT}
+  fi
+  echo "using: port=${port}"
+
+  run_proxy "${namespace}" "${port}"
+
+  # Cleaning up SOCKS5 proxy server if needed
+  if [ "${skip_cleanup_proxy}" = "no" ]; then
+    cleanup_proxy "${namespace}"
+  fi
+}
+
+plugin_main "$@"
