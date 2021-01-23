@@ -1,4 +1,4 @@
-# kubectl-plugin-socks-proxy
+# kubectl-plugin-socks5-proxy
 
 This is a kubectl plugin that creates a local SOCKS5 proxy through which you can access to Services or Pods in a Kubernetes cluster.
 
@@ -10,10 +10,10 @@ curl --socks5-hostname localhost:1080 http://httpbin.default.svc.cluster.local/h
 
 ## Installing
 
-This is a way to install kubectl-socks-proxy through [krew](https://krew.sigs.k8s.io/). After installing krew by following [this](https://krew.sigs.k8s.io/docs/user-guide/setup/install/), you can install kubectl-socks-proxy like this:
+This is a way to install kubectl-socks5-proxy through [krew](https://krew.sigs.k8s.io/). After installing krew by following [this](https://krew.sigs.k8s.io/docs/user-guide/setup/install/), you can install kubectl-socks5-proxy like this:
 
 ```sh
-$ kubectl krew install socks-proxy
+$ kubectl krew install socks5-proxy
 ```
 
 Once it's installed, run:
@@ -23,9 +23,9 @@ $ kubectl krew list
 PLUGIN        VERSION
 access-matrix a09c0597c96e008147ae1a120b16690a1401dfd243c6c5629ba396a34797d1f0
 krew          dc2f2e1ec8a0acb6f3e23580d4a8b38c44823e948c40342e13ff6e8e12edb15a
-socks-proxy   3b7091d90a1ad082c078a406f7b455a9f5686996d3c273efe589c5ae4c445bd8
+socks5-proxy   3b7091d90a1ad082c078a406f7b455a9f5686996d3c273efe589c5ae4c445bd8
 
-$ kubectl socks-proxy
+$ kubectl socks5-proxy
 ```
 
 ## How to use
@@ -34,7 +34,7 @@ $ kubectl socks-proxy
 
 ```TXT
 Usage:
-  kubectl socks-proxy
+  kubectl socks5-proxy
 
 Options:
   -n, --namespace <namespace>   Namespace to create SOCKS5 proxy server in
@@ -53,8 +53,8 @@ Options:
 
 Suppose you deploy a sample app in a Kubernetes cluster like this
 ```bash
-git clone https://github.com/yokawasa/kubectl-plugin-socks-proxy.git
-cd kubectl-plugin-socks-proxy
+git clone https://github.com/yokawasa/kubectl-plugin-socks5-proxy.git
+cd kubectl-plugin-socks5-proxy
 kubectl apply -f sample-apps/party-clippy.yaml
 
 kubectl get svc
@@ -64,9 +64,9 @@ kubernetes     ClusterIP   10.0.0.1       <none>        443/TCP   96d
 party-clippy   ClusterIP   10.0.5.226     <none>        80/TCP    1m
 ```
 
-First of all, create a local SOCKS5 proxy (default: 1080 port) by running `kubectl socks-proxy` like this:
+First of all, create a local SOCKS5 proxy (default: 1080 port) by running `kubectl socks5-proxy` like this:
 ```
-kubectl socks-proxy
+kubectl socks5-proxy
 
 using: namespace=default
 using: port=1080
@@ -141,4 +141,4 @@ Now you are ready to access Services or Pods in the Kubernetes cluster with your
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/yokawasa/kubectl-plugin-socks-proxy
+Bug reports and pull requests are welcome on GitHub at https://github.com/yokawasa/kubectl-plugin-socks5-proxy

@@ -11,7 +11,7 @@ DEFAULT_PROXY_NAMESPACE=default
 
 help(){
   echo "Usage: "
-  echo "  kubectl socks-proxy"
+  echo "  kubectl socks5-proxy"
   echo ""
   options
 }
