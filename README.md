@@ -8,26 +8,6 @@ What the plugin actually does is that it create a SOCKS proxy server Pod in a Ku
 curl --socks5-hostname localhost:1080 http://httpbin.default.svc.cluster.local/headers
 ```
 
-## Installing
-
-This is a way to install kubectl-socks5-proxy through [krew](https://krew.sigs.k8s.io/). After installing krew by following [this](https://krew.sigs.k8s.io/docs/user-guide/setup/install/), you can install kubectl-socks5-proxy like this:
-
-```sh
-$ kubectl krew install socks5-proxy
-```
-
-Once it's installed, run:
-```sh
-$ kubectl krew list
-
-PLUGIN        VERSION
-access-matrix a09c0597c96e008147ae1a120b16690a1401dfd243c6c5629ba396a34797d1f0
-krew          dc2f2e1ec8a0acb6f3e23580d4a8b38c44823e948c40342e13ff6e8e12edb15a
-socks5-proxy   3b7091d90a1ad082c078a406f7b455a9f5686996d3c273efe589c5ae4c445bd8
-
-$ kubectl socks5-proxy
-```
-
 ## How to use
 
 ### Usage
