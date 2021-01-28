@@ -45,7 +45,7 @@ run_proxy(){
   # Install an SOCKS5 proxy server if not yet installed
   r=$(kubectl get pod socks5 -n ${namespace} 2>/dev/null | tail -1 | awk '{print $1}') # 
   if [ "${r}" != "socks5" ];then
-    echo "Creating Socks5 Proxy (Pod)..."
+    echo "Creating SOCKS5 Proxy (Pod)..."
     cat <<EOF | kubectl apply -n ${namespace} -f -
 apiVersion: v1
 kind: Pod
@@ -76,6 +76,11 @@ EOF
     done
   fi
 
+  echo "Starting a local SOCKS5 Proxy (localhost:${port})..."
+  echo ""
+  echo "The proxy Pod can be cleaned up with ^C (if not in background),"
+  echo "or with a command \"kubectl delete pod socks5 -n ${namespace}\""
+  echo ""
   # Setup portforward
   kubectl port-forward -n ${namespace} socks5 $port:1080 
 }
