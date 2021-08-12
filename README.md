@@ -34,15 +34,20 @@ kubectl socks5-proxy
 ### Usage
 
 ```TXT
-Usage:
+Usage: 
   kubectl socks5-proxy
 
 Options:
   -n, --namespace <namespace>   Namespace to create SOCKS5 proxy server in
+                                Default: default
 
   -p, --port <local port>       Local port to be forwarded to the SOCKS5 proxy server (Pod).
-                                A client connects to this port, then the connection is forwarded to the
+                                A client connects to this port, then the connection is forwarded to the 
                                 SOCKS5 proxy server, which is then forwareded to the destination server
+                                Default: 1080
+
+  -i, --image <socks5 image>    Set the image used as socks5 proxy server
+                                Default: serjs/go-socks5-proxy
 
   --skip-cleanup-proxy          Skip cearning up SOCKS5 proxy pod
                                 Default: Cleaning up SOCKS5 proxy pod at the end

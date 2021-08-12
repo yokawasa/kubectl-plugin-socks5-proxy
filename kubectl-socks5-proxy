@@ -8,6 +8,7 @@
 MAX_POD_CREATION_TIME=10  # unit: second
 DEFAULT_PORT=1080
 DEFAULT_PROXY_NAMESPACE=default
+DEFAULT_PROXY_IMAGE=serjs/go-socks5-proxy
 
 help(){
   echo "Usage: "
@@ -17,13 +18,18 @@ help(){
 }
 
 options(){
-  cat <<"EOF"
+  cat << EOF
 Options:
   -n, --namespace <namespace>   Namespace to create SOCKS5 proxy server in
+                                Default: ${DEFAULT_PROXY_NAMESPACE}
 
   -p, --port <local port>       Local port to be forwarded to the SOCKS5 proxy server (Pod).
                                 A client connects to this port, then the connection is forwarded to the 
                                 SOCKS5 proxy server, which is then forwareded to the destination server
+                                Default: ${DEFAULT_PORT}
+
+  -i, --image <socks5 image>    Set the image used as socks5 proxy server
+                                Default: ${DEFAULT_PROXY_IMAGE}
 
   --skip-cleanup-proxy          Skip cearning up SOCKS5 proxy pod
                                 Default: Cleaning up SOCKS5 proxy pod at the end
@@ -41,6 +47,7 @@ cleanup_proxy(){
 run_proxy(){
   local namespace="$1"
   local port="$2"
+  local image="$3"
 
   # Install an SOCKS5 proxy server if not yet installed
   r=$(kubectl get pod socks5 -n ${namespace} 2>/dev/null | tail -1 | awk '{print $1}') # 
@@ -56,7 +63,7 @@ metadata:
 spec:
   containers:
   - name: socks5
-    image: serjs/go-socks5-proxy
+    image: ${image}
     ports:
     - containerPort: 1080
   nodeSelector:
@@ -91,24 +98,28 @@ plugin_main() {
     nSkip=1
     case $1 in
       "-h" | "--help")
-	help
-	exit 0
-	;;
+        help
+        exit 0
+      ;;
       "--skip-cleanup-proxy")
-	skip_cleanup_proxy=yes
-	;;
+        skip_cleanup_proxy=yes
+      ;;
       "-n" | "--namespace" )
-	namespace=$2
-	nSkip=2
-	;;
+        namespace=$2
+        nSkip=2
+      ;;
       "-p" | "--port" )
-	port=$2
-	nSkip=2
-	;;
+        port=$2
+        nSkip=2
+      ;;
+      "-i" | "--image" )
+        image=$2
+        nSkip=2
+      ;;
       *)
-	help >&2
-	exit 1
-	;;
+        help >&2
+        exit 1
+      ;;
     esac
     shift $nSkip
   done
@@ -129,7 +140,12 @@ plugin_main() {
   fi
   echo "using: port=${port}"
 
-  run_proxy "${namespace}" "${port}"
+  if [ ! -n "${image}" ]; then
+    image=${DEFAULT_PROXY_IMAGE}
+  fi
+  echo "using: image=${image}"
+
+  run_proxy "${namespace}" "${port}" "${image}"
 
   # Cleaning up SOCKS5 proxy server if needed
   if [ "${skip_cleanup_proxy}" = "no" ]; then
