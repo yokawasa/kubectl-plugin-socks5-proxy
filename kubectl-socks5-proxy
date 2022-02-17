@@ -6,7 +6,7 @@
 [[ -n $DEBUG ]] && set -x -e
 
 MAX_POD_CREATION_TIME=10  # unit: second
-DEFAULT_NAME=${USER}-proxy
+DEFAULT_NAME=$(echo ${USER}-proxy|sed -e 's/[^[:alnum:]|-]//g'|tr '[:upper:]' '[:lower:]')
 DEFAULT_PORT=1080
 DEFAULT_PROXY_NAMESPACE=default
 DEFAULT_PROXY_IMAGE=serjs/go-socks5-proxy
