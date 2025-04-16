@@ -70,6 +70,10 @@ spec:
     image: ${image}
     ports:
     - containerPort: 1080
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
   nodeSelector:
     "kubernetes.io/os": linux
 EOF
