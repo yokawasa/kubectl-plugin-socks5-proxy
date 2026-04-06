@@ -39,7 +39,8 @@ Usage:
 
 Options:
   -n, --namespace <namespace>   Namespace to create SOCKS5 proxy server in
-                                Default: default
+                                Default: current namespace from kubectl config
+                                If no namespace is set in the current context, default is used
 
   -p, --port <local port>       Local port to be forwarded to the SOCKS5 proxy server (Pod)
                                 A client connects to this port, then the connection is forwarded to the 
@@ -74,6 +75,7 @@ party-clippy   ClusterIP   10.0.5.226     <none>        80/TCP    1m
 ```
 
 First of all, create a local SOCKS5 proxy (default: 1080 port) by running `kubectl socks5-proxy` like this:
+
 ```
 kubectl socks5-proxy
 
