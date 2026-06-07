@@ -36,6 +36,10 @@ Options:
   -i, --image <socks5 image>    Set the image used as socks5 proxy server
                                 Default: ${DEFAULT_PROXY_IMAGE}
 
+  --proxy-user <username>       Enable SOCKS5 authentication with the given username
+
+  --proxy-password <password>   Enable SOCKS5 authentication with the given password
+
   --skip-cleanup-proxy          Skip cearning up SOCKS5 proxy pod
                                 Default: Cleaning up SOCKS5 proxy pod at the end
 
@@ -53,6 +57,9 @@ run_proxy(){
   local namespace="$1"
   local port="$2"
   local image="$3"
+  local require_auth="$4"
+  local proxy_user="$5"
+  local proxy_password="$6"
 
   # Install an SOCKS5 proxy server if not yet installed
   r=$(kubectl get pod ${podname} -n ${namespace} 2>/dev/null | tail -1 | awk '{print $1}') # 
@@ -69,6 +76,13 @@ spec:
   containers:
   - name: ${podname}
     image: ${image}
+    env:
+    - name: REQUIRE_AUTH
+      value: "${require_auth}"
+    - name: PROXY_USER
+      value: "${proxy_user}"
+    - name: PROXY_PASSWORD
+      value: "${proxy_password}"
     ports:
     - containerPort: 1080
     resources:
@@ -129,6 +143,14 @@ plugin_main() {
         image=$2
         nSkip=2
       ;;
+      "--proxy-user" )
+        proxy_user=$2
+        nSkip=2
+      ;;
+      "--proxy-password" )
+        proxy_password=$2
+        nSkip=2
+      ;;
       *)
         help >&2
         exit 1
@@ -163,7 +185,22 @@ plugin_main() {
   fi
   echo "using: image=${image}"
 
-  run_proxy "${namespace}" "${port}" "${image}"
+  require_auth=false
+  if [ -n "${proxy_user}" ] || [ -n "${proxy_password}" ]; then
+    if [ ! -n "${proxy_user}" ] || [ ! -n "${proxy_password}" ]; then
+      echo "Error: --proxy-user and --proxy-password must be set together" >&2
+      exit 1
+    fi
+    require_auth=true
+  fi
+
+  if [ "${require_auth}" = "true" ]; then
+    echo "using: proxy authentication=enabled"
+  else
+    echo "using: proxy authentication=disabled"
+  fi
+
+  run_proxy "${namespace}" "${port}" "${image}" "${require_auth}" "${proxy_user}" "${proxy_password}"
 
   # Cleaning up SOCKS5 proxy server if needed
   if [ "${skip_cleanup_proxy}" = "no" ]; then
