@@ -53,6 +53,10 @@ Options:
   -i, --image <socks5 image>    Set the image used as socks5 proxy server
                                 Default: serjs/go-socks5-proxy
 
+  --proxy-user <username>       Enable SOCKS5 authentication with the given username
+
+  --proxy-password <password>   Enable SOCKS5 authentication with the given password
+
   --skip-cleanup-proxy          Skip cearning up SOCKS5 proxy pod
                                 Default: Cleaning up SOCKS5 proxy pod at the end
 
@@ -87,6 +91,18 @@ Forwarding from 127.0.0.1:1080 -> 1080
 Forwarding from [::1]:1080 -> 1080
 ```
 
+By default, the plugin creates the proxy Pod with `REQUIRE_AUTH=false` so it remains compatible with newer `serjs/go-socks5-proxy` images.
+
+### Use SOCKS5 Proxy with Authentication
+
+If you want to require SOCKS5 authentication, provide both `--proxy-user` and `--proxy-password`:
+
+```bash
+kubectl socks5-proxy --proxy-user demo --proxy-password secret
+```
+
+If either option is omitted, the plugin exits with an error.
+
 ### Use SOCKS5 Proxy in Curl
 
 Now you can access Srvices or Pods in the Kubernetes cluster from a local machine by using the local port as SOCKS proxy in Curl
@@ -97,6 +113,12 @@ curl --socks5-hostname localhost:1080 party-clippy
 curl --socks5-hostname localhost:1080 http://party-clippy
 # FQDN
 curl --socks5-hostname localhost:1080 http://party-clippy.default.svc.cluster.local
+```
+
+When authentication is enabled, include credentials in the proxy URL:
+
+```bash
+curl --proxy socks5h://demo:secret@localhost:1080 http://party-clippy.default.svc.cluster.local
 ```
 
 ```

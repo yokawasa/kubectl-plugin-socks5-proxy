@@ -2,6 +2,10 @@
 
 All notable changes to the "kubectl-plugin-socks5-proxy" extension will be documented in this file.
 
+## Unreleased
+- Fix compatibility with newer `serjs/go-socks5-proxy` images by setting `REQUIRE_AUTH=false` by default
+- Add `--proxy-user` and `--proxy-password` options to enable SOCKS5 authentication explicitly
+
 ## v1.1.0
 - Add option for a custom podname by [@oscrx](https://github.com/oscrx) in [#6](https://github.com/yokawasa/kubectl-plugin-socks5-proxy/pull/6)
 
