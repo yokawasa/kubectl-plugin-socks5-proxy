@@ -27,7 +27,7 @@ spec:
         app: party-clippy
     spec:
       containers:
-      - image: r.j3ss.co/party-clippy
+      - image: ghcr.io/yokawasa/party-clippy
         name: party-clippy
         tty: true
         command: ["party-clippy"]
